@@ -104,10 +104,42 @@ require('lazy').setup({
 
       -- Adds a number of user-friendly snippets
       'rafamadriz/friendly-snippets',
-
-      -- AI completions
-      'tzachar/cmp-ai'
     },
+  },
+
+  -- AI completions
+  {
+    'milanglacier/minuet-ai.nvim',
+    config = function()
+      require('minuet').setup {
+        virtualtext = {
+          auto_trigger_ft = { 'python', 'lua' },
+          keymap = {
+            -- accept whole completion
+            accept = '<A-a>',
+            -- accept one line
+            accept_line = '<A-l>',
+            -- accept n lines (prompts for number)
+            -- e.g. "A-z 2 CR" will accept 2 lines
+            accept_n_lines = '<A-z>',
+            -- Cycle to prev completion item, or manually invoke completion
+            prev = '<A-[>',
+            -- Cycle to next completion item, or manually invoke completion
+            next = '<A-]>',
+            dismiss = '<A-e>',
+          },
+          show_on_completion_menu = true,
+        },
+        provider_options = {
+          codestral = {
+            optional = {
+              max_tokens = 256,
+              stop = { '\n\n' },
+            },
+          },
+        }
+      }
+    end,
   },
 
   -- Useful plugin to show you pending keybinds.
@@ -556,30 +588,8 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
-    { name = 'cmp_ai' },
   },
 }
-
--- Setup AI code completions from Codestral
-local cmp_ai = require('cmp_ai.config')
-
-cmp_ai:setup({
-  max_lines = 1000,
-  provider = 'Codestral',
-  provider_options = {
-    model = 'codestral-latest',
-  },
-  notify = true,
-  notify_callback = function(msg)
-    vim.notify(msg)
-  end,
-  run_on_every_keystroke = true,
-  ignored_file_types = {
-    -- default is not to ignore
-    -- uncomment to ignore in lua:
-    -- lua = true
-  },
-})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
