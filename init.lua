@@ -104,6 +104,9 @@ require('lazy').setup({
 
       -- Adds a number of user-friendly snippets
       'rafamadriz/friendly-snippets',
+
+      -- AI completions
+      'tzachar/cmp-ai'
     },
   },
 
@@ -128,12 +131,6 @@ require('lazy').setup({
         vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
       end,
     },
-  },
-
-  {
-    -- Theme inspired by Atom
-    'navarasu/onedark.nvim',
-    priority = 1000,
   },
 
   {
@@ -168,7 +165,13 @@ require('lazy').setup({
     ---@module 'ibl'
     ---@type ibl.config
     opts = {
-      indent = { char = '┊' },
+      indent = {
+        highlight = {
+          "CursorColumn",
+          "Whitespace",
+        },
+        char = '│'
+      },
     },
   },
 
@@ -227,6 +230,7 @@ require('lazy').setup({
       },
     },
   },
+  { 'echasnovski/mini.nvim', version = false },
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -319,6 +323,10 @@ require('telescope').setup {
     },
   },
 }
+
+-- mini.nvim modules
+require('mini.ai').setup({})
+require('mini.ai').setup({})
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
@@ -466,9 +474,9 @@ end
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  -- pyright = {},
-  -- rust_analyzer = {},
+  pyright = {},
   -- tsserver = {},
+  rust_analyzer = {},
   svelte = {},
 
   lua_ls = {
@@ -548,8 +556,42 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'cmp_ai' },
   },
 }
 
+-- Setup AI code completions from Codestral
+local cmp_ai = require('cmp_ai.config')
+
+cmp_ai:setup({
+  max_lines = 1000,
+  provider = 'Codestral',
+  provider_options = {
+    model = 'codestral-latest',
+  },
+  notify = true,
+  notify_callback = function(msg)
+    vim.notify(msg)
+  end,
+  run_on_every_keystroke = true,
+  ignored_file_types = {
+    -- default is not to ignore
+    -- uncomment to ignore in lua:
+    -- lua = true
+  },
+})
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- Remember last position on file reopen
+vim.api.nvim_create_autocmd("BufReadPost", {
+  pattern = "*",
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= lcount then
+      vim.api.nvim_win_set_cursor(0, mark)
+    end
+  end,
+})
