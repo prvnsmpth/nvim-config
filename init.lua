@@ -113,7 +113,7 @@ require('lazy').setup({
     config = function()
       require('minuet').setup {
         virtualtext = {
-          auto_trigger_ft = { 'python', 'lua' },
+          auto_trigger_ft = { 'python', 'lua', 'javascript', 'typescript', 'svelte' },
           keymap = {
             -- accept whole completion
             accept = '<A-a>',
@@ -192,6 +192,14 @@ require('lazy').setup({
         component_separators = '|',
         section_separators = '',
       },
+      sections = {
+        lualine_c = {
+          {
+            'filename',
+            path = 1,
+          }
+        }
+      }
     },
   },
 
@@ -274,7 +282,7 @@ require('lazy').setup({
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
-  require 'kickstart.plugins.autoformat',
+  -- require 'kickstart.plugins.autoformat',
   require 'kickstart.plugins.debug',
 
   -- NOTE: The import below automatically adds your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -490,7 +498,9 @@ local on_attach = function(_, bufnr)
   nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
 
   -- See `:help K` for why this keymap
-  nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
+  nmap('K', function()
+    vim.lsp.buf.hover { border = "single" }
+  end, 'Hover Documentation')
   nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
 
   -- Lesser used LSP functionality
@@ -516,7 +526,22 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   pyright = {},
-  -- tsserver = {},
+  ts_ls = {
+    typescript = {
+      format = {
+        indentSize = 2,
+        convertTabsToSpaces = true,
+        tabSize = 2,
+      },
+    },
+    javascript = {
+      format = {
+        indentSize = 2,
+        convertTabsToSpaces = true,
+        tabSize = 2,
+      },
+    },
+  },
   rust_analyzer = {},
   svelte = {},
 
